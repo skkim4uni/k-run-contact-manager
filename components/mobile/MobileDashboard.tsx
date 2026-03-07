@@ -62,13 +62,17 @@ function importanceBadgeClass(importance: string | null) {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-type SortKey = "days_overdue" | "name" | "group_tag" | "last_contact_date"
+type SortKey = "days_overdue" | "name" | "importance"
+
+const GROUP_TAGS = ["투자업계", "LP", "개인", "기타"] as const
 
 export function MobileDashboard() {
   const { contacts, loading, editContact } = useContacts()
   const today = useMemo(getToday, [])
 
   const [search, setSearch] = useState("")
+  const [filterGroup, setFilterGroup] = useState("all")
+  const [filterImportance, setFilterImportance] = useState("all")
   const [sortKey, setSortKey] = useState<SortKey>("days_overdue")
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null)
   const [panelOpen, setPanelOpen] = useState(false)
@@ -79,32 +83,34 @@ export function MobileDashboard() {
   )
 
   const filtered = useMemo(() => {
-    if (!search) return overdueAll
-    const s = search.toLowerCase()
-    return overdueAll.filter(
-      (c) =>
-        c.name.toLowerCase().includes(s) ||
-        (c.company?.toLowerCase() ?? "").includes(s)
-    )
-  }, [overdueAll, search])
+    let result = overdueAll
+    if (search) {
+      const s = search.toLowerCase()
+      result = result.filter(
+        (c) =>
+          c.name.toLowerCase().includes(s) ||
+          (c.company?.toLowerCase() ?? "").includes(s)
+      )
+    }
+    if (filterGroup !== "all") result = result.filter((c) => c.group_tag === filterGroup)
+    if (filterImportance !== "all") result = result.filter((c) => c.importance === filterImportance)
+    return result
+  }, [overdueAll, search, filterGroup, filterImportance])
+
+  const IMPORTANCE_ORDER: Record<string, number> = { 상: 0, 중: 1, 하: 2 }
 
   const sorted = useMemo(() => {
     return [...filtered].sort((a, b) => {
       if (sortKey === "days_overdue") {
         const dA = calcDaysOverdue(a, today) ?? Infinity
         const dB = calcDaysOverdue(b, today) ?? Infinity
-        return dB - dA // desc
+        return dB - dA
       }
       if (sortKey === "name") return a.name.localeCompare(b.name, "ko")
-      if (sortKey === "group_tag") {
-        const gA = a.group_tag ?? ""
-        const gB = b.group_tag ?? ""
-        return gA.localeCompare(gB, "ko")
-      }
-      if (sortKey === "last_contact_date") {
-        const lA = a.last_contact_date ?? ""
-        const lB = b.last_contact_date ?? ""
-        return lA.localeCompare(lB) // asc (오래된 순)
+      if (sortKey === "importance") {
+        const iA = IMPORTANCE_ORDER[a.importance ?? ""] ?? 99
+        const iB = IMPORTANCE_ORDER[b.importance ?? ""] ?? 99
+        return iA - iB
       }
       return 0
     })
@@ -145,8 +151,34 @@ export function MobileDashboard() {
           <SelectContent>
             <SelectItem value="days_overdue">초과일순</SelectItem>
             <SelectItem value="name">이름순</SelectItem>
-            <SelectItem value="group_tag">그룹순</SelectItem>
-            <SelectItem value="last_contact_date">컨택일순</SelectItem>
+            <SelectItem value="importance">중요도순</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Filters */}
+      <div className="px-4 py-2 flex gap-2 border-b">
+        <Select value={filterGroup} onValueChange={setFilterGroup}>
+          <SelectTrigger className="flex-1 h-8 text-xs">
+            <SelectValue placeholder="그룹" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">전체 그룹</SelectItem>
+            {GROUP_TAGS.map((t) => (
+              <SelectItem key={t} value={t}>{t}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={filterImportance} onValueChange={setFilterImportance}>
+          <SelectTrigger className="flex-1 h-8 text-xs">
+            <SelectValue placeholder="중요도" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">전체 중요도</SelectItem>
+            <SelectItem value="상">상</SelectItem>
+            <SelectItem value="중">중</SelectItem>
+            <SelectItem value="하">하</SelectItem>
           </SelectContent>
         </Select>
       </div>

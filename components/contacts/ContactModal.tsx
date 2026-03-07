@@ -297,19 +297,6 @@ export function ContactModal({ open, onOpenChange, contact, onSave, onDelete, on
           </div>
         </div>
 
-        {/* 시스템 정보 (수정 모드) */}
-        {contact && (
-          <div className="text-xs text-muted-foreground border-t pt-3 space-y-0.5">
-            <p>ID: {contact.id}</p>
-            {contact.inserted_at && (
-              <p>DB 입력일: {contact.inserted_at.slice(0, 10)}</p>
-            )}
-            {contact.updated_at && (
-              <p>최종 수정일: {contact.updated_at.slice(0, 10)}</p>
-            )}
-          </div>
-        )}
-
         <DialogFooter className="flex-col sm:flex-row gap-2 mt-2">
           {contact && !showDeleteConfirm && (
             <div className="flex items-center gap-2 sm:mr-auto">

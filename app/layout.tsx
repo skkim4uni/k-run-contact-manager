@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Geist } from "next/font/google"
 import { NavLinks } from "@/components/NavLinks"
+import { MobileNav } from "@/components/mobile/MobileNav"
 import "./globals.css"
 
 const geist = Geist({ variable: "--font-geist-sans", subsets: ["latin"] })
@@ -14,7 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ko">
       <body className={`${geist.variable} antialiased min-h-screen bg-background font-sans`}>
-        <header className="border-b bg-background/95 backdrop-blur sticky top-0 z-50">
+        <header className="border-b bg-background/95 backdrop-blur sticky top-0 z-50 md:block hidden">
           <nav className="max-w-[1600px] mx-auto px-6 h-14 flex items-center gap-8">
             <span className="font-semibold text-sm tracking-tight select-none">
               K-run Contact Manager
@@ -22,7 +23,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <NavLinks />
           </nav>
         </header>
-        <main className="min-h-[calc(100vh-3.5rem)]">{children}</main>
+        <main className="min-h-screen md:min-h-[calc(100vh-3.5rem)] pb-16 md:pb-0">{children}</main>
+        <MobileNav />
       </body>
     </html>
   )

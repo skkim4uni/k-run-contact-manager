@@ -127,7 +127,7 @@ export function MeetingLogPanel({ contact, open, onOpenChange, today, onUpdateCo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg flex flex-col max-h-[90vh]">
+      <DialogContent className="w-[calc(100%-2rem)] sm:max-w-lg flex flex-col max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>
             {view === "form"

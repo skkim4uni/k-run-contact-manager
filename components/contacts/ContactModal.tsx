@@ -89,7 +89,7 @@ export function ContactModal({ open, onOpenChange, contact, onSave, onDelete, on
         interest: form.interest,
         excluded: form.excluded,
         contact_cycle: form.contact_cycle ? parseInt(form.contact_cycle) : null,
-        last_contact_date: form.last_contact_date || null,
+        last_contact_date: contact?.last_contact_date ?? null, // 수동 수정 불가, 기존 값 유지
         memo: form.memo || null,
         created_at: form.created_at || null,
       }
@@ -240,15 +240,13 @@ export function ContactModal({ open, onOpenChange, contact, onSave, onDelete, on
             />
           </div>
 
-          {/* 최근 컨택일 */}
+          {/* 최근 컨택일 (읽기 전용 — 미팅 로그에서 자동 반영) */}
           <div className="space-y-1">
-            <Label htmlFor="last_contact_date">최근 컨택일</Label>
-            <Input
-              id="last_contact_date"
-              type="date"
-              value={form.last_contact_date}
-              onChange={(e) => set("last_contact_date")(e.target.value)}
-            />
+            <Label className="text-muted-foreground">최근 컨택일</Label>
+            <div className="h-9 px-3 flex items-center rounded-md border border-input bg-muted/40 text-sm text-muted-foreground select-none">
+              {form.last_contact_date || "—"}
+            </div>
+            <p className="text-xs text-muted-foreground">미팅 로그에서 자동 반영됩니다</p>
           </div>
 
           {/* 최초 등록일 */}

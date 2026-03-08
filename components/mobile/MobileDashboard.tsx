@@ -6,10 +6,11 @@ import { MeetingLogPanel } from "@/components/dashboard/MeetingLogPanel"
 import type { Contact } from "@/lib/types"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
-import { Search, Bell } from "lucide-react"
+import { Search, Bell, ArrowUp, ArrowDown } from "lucide-react"
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -62,7 +63,24 @@ function importanceBadgeClass(importance: string | null) {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-type SortKey = "days_overdue" | "name" | "importance"
+type SortKey = "days_overdue" | "name" | "importance" | "last_contact_date" | "interest"
+type SortDir = "asc" | "desc"
+
+const DEFAULT_DIR: Record<SortKey, SortDir> = {
+  days_overdue: "desc",
+  name: "asc",
+  importance: "asc",
+  last_contact_date: "asc",
+  interest: "desc",
+}
+
+const SORT_LABELS: Record<SortKey, string> = {
+  days_overdue: "초과일순",
+  name: "이름순",
+  importance: "중요도순",
+  last_contact_date: "컨택일순",
+  interest: "관심여부순",
+}
 
 const GROUP_TAGS = ["투자업계", "LP", "개인", "기타"] as const
 
@@ -74,8 +92,18 @@ export function MobileDashboard() {
   const [filterGroup, setFilterGroup] = useState("all")
   const [filterImportance, setFilterImportance] = useState("all")
   const [sortKey, setSortKey] = useState<SortKey>("days_overdue")
+  const [sortDir, setSortDir] = useState<SortDir>("desc")
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null)
   const [panelOpen, setPanelOpen] = useState(false)
+
+  function handleSortKeyChange(newKey: SortKey) {
+    if (newKey === sortKey) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"))
+    } else {
+      setSortKey(newKey)
+      setSortDir(DEFAULT_DIR[newKey])
+    }
+  }
 
   const overdueAll = useMemo(
     () => contacts.filter((c) => isOverdue(c, today)),
@@ -100,21 +128,37 @@ export function MobileDashboard() {
   const IMPORTANCE_ORDER: Record<string, number> = { 상: 0, 중: 1, 하: 2 }
 
   const sorted = useMemo(() => {
+    const dir = sortDir === "asc" ? 1 : -1
     return [...filtered].sort((a, b) => {
       if (sortKey === "days_overdue") {
-        const dA = calcDaysOverdue(a, today) ?? Infinity
-        const dB = calcDaysOverdue(b, today) ?? Infinity
-        return dB - dA
+        const dA = calcDaysOverdue(a, today) ?? -Infinity
+        const dB = calcDaysOverdue(b, today) ?? -Infinity
+        return (dA - dB) * dir
       }
-      if (sortKey === "name") return a.name.localeCompare(b.name, "ko")
+      if (sortKey === "name") {
+        return a.name.localeCompare(b.name, "ko") * dir
+      }
       if (sortKey === "importance") {
         const iA = IMPORTANCE_ORDER[a.importance ?? ""] ?? 99
         const iB = IMPORTANCE_ORDER[b.importance ?? ""] ?? 99
-        return iA - iB
+        return (iA - iB) * dir
+      }
+      if (sortKey === "last_contact_date") {
+        const dA = a.last_contact_date ?? ""
+        const dB = b.last_contact_date ?? ""
+        if (!dA && !dB) return 0
+        if (!dA) return 1
+        if (!dB) return -1
+        return dA < dB ? -dir : dA > dB ? dir : 0
+      }
+      if (sortKey === "interest") {
+        const iA = a.interest ? 1 : 0
+        const iB = b.interest ? 1 : 0
+        return (iB - iA) * dir
       }
       return 0
     })
-  }, [filtered, sortKey, today])
+  }, [filtered, sortKey, sortDir, today])
 
   const openPanel = (contact: Contact) => {
     setSelectedContact(contact)
@@ -144,16 +188,41 @@ export function MobileDashboard() {
             className="pl-8 h-9"
           />
         </div>
-        <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
-          <SelectTrigger className="w-28 h-9">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="days_overdue">초과일순</SelectItem>
-            <SelectItem value="name">이름순</SelectItem>
-            <SelectItem value="importance">중요도순</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex gap-1">
+          <Select
+            value={sortKey}
+            onValueChange={(v) => handleSortKeyChange(v as SortKey)}
+          >
+            <SelectTrigger className="w-28 h-9 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {(Object.keys(SORT_LABELS) as SortKey[]).map((key) => (
+                <SelectItem key={key} value={key}>
+                  {SORT_LABELS[key]}
+                  {sortKey === key && (
+                    <span className="ml-1 text-muted-foreground">
+                      {sortDir === "asc" ? "↑" : "↓"}
+                    </span>
+                  )}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-9 w-9 shrink-0"
+            onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+            title={sortDir === "asc" ? "오름차순" : "내림차순"}
+          >
+            {sortDir === "asc" ? (
+              <ArrowUp className="h-4 w-4" />
+            ) : (
+              <ArrowDown className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -238,9 +307,13 @@ export function MobileDashboard() {
                               관심
                             </Badge>
                           )}
-                          {contact.last_contact_date && (
+                          {contact.last_contact_date ? (
                             <span className="text-xs text-muted-foreground">
-                              최근: {contact.last_contact_date}
+                              컨택: {contact.last_contact_date}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-muted-foreground/60">
+                              컨택일 없음
                             </span>
                           )}
                         </div>

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation"
 const NAV_ITEMS = [
   { href: "/", label: "대시보드" },
   { href: "/contacts", label: "연락처" },
+  { href: "/logs", label: "미팅 로그" },
 ]
 
 export function NavLinks() {

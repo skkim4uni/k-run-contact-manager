@@ -35,3 +35,7 @@ export interface MeetingLog {
 
 export type MeetingLogInsert = Omit<MeetingLog, "id" | "created_at" | "updated_at">;
 export type MeetingLogUpdate = Partial<Omit<MeetingLog, "id" | "contact_id" | "created_at" | "updated_at">>;
+
+export interface MeetingLogWithContact extends MeetingLog {
+  contacts: Contact;
+}

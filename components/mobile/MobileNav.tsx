@@ -2,11 +2,12 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, Users } from "lucide-react"
+import { LayoutDashboard, Users, FileText } from "lucide-react"
 
 const NAV_ITEMS = [
   { href: "/", label: "대시보드", Icon: LayoutDashboard },
   { href: "/contacts", label: "연락처", Icon: Users },
+  { href: "/logs", label: "미팅 로그", Icon: FileText },
 ]
 
 export function MobileNav() {

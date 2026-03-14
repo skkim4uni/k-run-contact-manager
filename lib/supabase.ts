@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import type { Contact, ContactInsert, ContactUpdate, MeetingLog, MeetingLogInsert, MeetingLogUpdate } from "./types";
+import type { Contact, ContactInsert, ContactUpdate, MeetingLog, MeetingLogInsert, MeetingLogUpdate, MeetingLogWithContact } from "./types";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -138,6 +138,20 @@ export async function deleteMeetingLog(id: string): Promise<void> {
     if (error) throw error;
   } catch (error) {
     console.error("deleteMeetingLog 오류:", error);
+    throw error;
+  }
+}
+
+export async function getAllMeetingLogs(): Promise<MeetingLogWithContact[]> {
+  try {
+    const { data, error } = await supabase
+      .from("meeting_logs")
+      .select("*, contacts(*)")
+      .order("meeting_date", { ascending: false });
+    if (error) throw error;
+    return (data ?? []) as MeetingLogWithContact[];
+  } catch (error) {
+    console.error("getAllMeetingLogs 오류:", error);
     throw error;
   }
 }

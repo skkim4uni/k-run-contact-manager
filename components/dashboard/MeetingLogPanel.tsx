@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog"
@@ -41,6 +41,22 @@ export function MeetingLogPanel({ contact, open, onOpenChange, today, onUpdateCo
   const [formContents, setFormContents] = useState("")
   const [saving, setSaving] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const yearDigitCount = useRef(0)
+
+  const handleDateKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (/^\d$/.test(e.key)) {
+      yearDigitCount.current += 1
+      if (yearDigitCount.current === 4) {
+        yearDigitCount.current = 0
+        const el = e.currentTarget
+        setTimeout(() => {
+          el.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true, cancelable: true }))
+        }, 0)
+      }
+    } else {
+      yearDigitCount.current = 0
+    }
+  }
 
   // 패널이 열리거나 대상 연락처가 바뀔 때 목록 뷰로 초기화
   useEffect(() => {
@@ -246,6 +262,8 @@ export function MeetingLogPanel({ contact, open, onOpenChange, today, onUpdateCo
                 type="date"
                 value={formDate}
                 onChange={(e) => setFormDate(e.target.value)}
+                onKeyDown={handleDateKeyDown}
+                onBlur={() => { yearDigitCount.current = 0 }}
                 disabled={saving}
               />
             </div>

@@ -316,13 +316,12 @@ export function ScheduledPage() {
 
       {/* 테이블 */}
       <div className="border rounded-lg overflow-hidden">
-        <table className="w-full text-sm">
+        <table className="w-full text-sm table-fixed">
           <thead className="bg-muted/50">
             <tr>
-              <th className="text-left px-4 py-2.5 font-medium w-52">미팅 예정일</th>
+              <th className="text-left px-4 py-2.5 font-medium w-44">미팅 예정일</th>
               <th className="text-left px-4 py-2.5 font-medium w-32">이름</th>
-              <th className="text-left px-4 py-2.5 font-medium w-40">회사</th>
-              <th className="text-left px-4 py-2.5 font-medium w-36">전화번호</th>
+              <th className="text-left px-4 py-2.5 font-medium w-48">회사</th>
               <th className="text-left px-4 py-2.5 font-medium">메모</th>
             </tr>
           </thead>
@@ -363,12 +362,9 @@ export function ScheduledPage() {
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3 font-medium">{log.contacts?.name}</td>
-                    <td className="px-4 py-3 text-muted-foreground">
+                    <td className="px-4 py-3 font-medium truncate">{log.contacts?.name}</td>
+                    <td className="px-4 py-3 text-muted-foreground truncate">
                       {log.contacts?.company ?? "-"}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground tabular-nums">
-                      {log.contacts?.phone ?? "-"}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground max-w-0">
                       <p className="truncate">

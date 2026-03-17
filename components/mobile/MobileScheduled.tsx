@@ -199,11 +199,6 @@ export function MobileScheduled() {
                           </span>
                         )}
                       </div>
-                      {log.contacts?.phone && (
-                        <p className="text-xs text-muted-foreground tabular-nums">
-                          {log.contacts.phone}
-                        </p>
-                      )}
                       {log.contacts?.memo && (
                         <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
                           {log.contacts.memo}

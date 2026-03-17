@@ -197,7 +197,8 @@ export function DashboardPage() {
 
   // ─── 검색 + 필터 ───────────────────────────────────────────────────
   const filtered = useMemo(() => {
-    let result = overdueAll
+    // 관심여부 "yes" 필터 시: 연락주기 무관하게 전체 연락처 대상
+    let result = filterInterest === "yes" ? contacts : overdueAll
     if (search) {
       const s = search.toLowerCase()
       result = result.filter(
@@ -211,7 +212,7 @@ export function DashboardPage() {
     if (filterInterest === "yes") result = result.filter((c) => c.interest === true)
     else if (filterInterest === "no") result = result.filter((c) => c.interest !== true)
     return result
-  }, [overdueAll, search, filterGroup, filterImportance, filterInterest])
+  }, [contacts, overdueAll, search, filterGroup, filterImportance, filterInterest])
 
   // ─── 정렬 ─────────────────────────────────────────────────────────
   const sorted = useMemo(() => {
@@ -645,7 +646,9 @@ export function DashboardPage() {
                     colSpan={(visibleColumns.has("days_overdue") ? 1 : 0) + 1 + visibleToggleableCols.length}
                     className="text-center py-16 text-muted-foreground"
                   >
-                    {overdueAll.length === 0
+                    {filterInterest === "yes"
+                      ? "관심 연락처가 없습니다."
+                      : overdueAll.length === 0
                       ? "연락이 필요한 대상자가 없습니다."
                       : "검색/필터 결과가 없습니다."}
                   </TableCell>

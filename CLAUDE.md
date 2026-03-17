@@ -29,6 +29,8 @@
   │   │   └── page.tsx              # 연락처 관리
   │   ├── logs/
   │   │   └── page.tsx              # 미팅 로그 전체 목록
+  │   ├── scheduled/
+  │   │   └── page.tsx              # 미팅 예정 목록
   │   └── layout.tsx
   ├── components/
   │   ├── ui/                       # shadcn/ui 컴포넌트
@@ -37,11 +39,14 @@
   │   │   └── MeetingLogPanel.tsx   # 공유 미팅 로그 팝업
   │   ├── logs/                     # 미팅 로그 전체 목록 컴포넌트
   │   │   └── LogsPage.tsx
+  │   ├── scheduled/                # 미팅 예정 컴포넌트
+  │   │   └── ScheduledPage.tsx
   │   └── mobile/                   # 모바일 전용 컴포넌트
   │       ├── MobileNav.tsx
   │       ├── MobileDashboard.tsx
   │       ├── MobileContacts.tsx
-  │       └── MobileLogs.tsx
+  │       ├── MobileLogs.tsx
+  │       └── MobileScheduled.tsx
   ├── lib/
   │   ├── supabase.ts               # Supabase 클라이언트
   │   ├── types.ts                  # TypeScript 타입 정의
@@ -95,8 +100,9 @@
 #### 요약 카드 (상단)
 - 연락 필요 대상자 전체 수
 - 연락 필요 대상자 그룹별 카운트 (투자업계 / LP / 개인 / 기타)
-- 연락 필요 대상자 중 관심 연락처 수
+- 관심 연락처 수 (전체 contacts 기준, 연락주기 무관)
 - (연락 필요 대상자 기준: last_contact_date + contact_cycle < 오늘 날짜)
+- **관심 연락처 카드 클릭 시**: 연락주기 무관하게 interest=true 전체 연락처 목록 표시
 
 #### 연락 필요 대상자 목록 (메인)
 - contact_cycle 기준으로 연락 기한이 지난 사람만 표시
@@ -147,8 +153,8 @@
 ### 3-3. 미팅 로그 전체 목록 (`/logs`)
 
 #### 목록 화면
-- meeting_logs 전체를 컨택일(meeting_date) 최신순으로 표시
-- 표시 컬럼: 컨택일 / 이름 / 회사 / 내용 (truncate)
+- meeting_logs 중 오늘 날짜 이하(meeting_date ≤ today)만 컨택일 최신순으로 표시
+- 표시 컬럼: 컨택일 / 이름 / 내용 (truncate)
 - 키워드 검색: 이름 또는 내용(contents)
 - 페이지당 목록 수 선택 (10개 / 20개 / 50개 / 100개)
 - 페이지네이션 (처음 / 이전 / 다음 / 끝)
@@ -159,9 +165,30 @@
 - `MeetingLogWithContact` 타입 (lib/types.ts) — MeetingLog + contacts: Contact
 
 #### 모바일 버전 (MobileLogs)
-- 카드 형태 목록 (이름 / 회사 / 내용 / 컨택일)
+- 카드 형태 목록 (이름 / 내용 / 컨택일)
 - 동일 검색 + 페이지 크기 + 페이지네이션
 - 카드 탭 시 미팅 로그 팝업
+
+### 3-4. 미팅 예정 (`/scheduled`)
+
+#### 목록 화면
+- meeting_date ≥ 오늘인 미팅 로그를 표시 (오늘 이후 날짜로 등록된 로그 = 미팅 예정)
+- 표시 컬럼: 미팅 예정일 / 이름 / 회사 / 전화번호 / 메모
+- 정렬 관리 패널 (미팅 예정일 / 이름 / 회사, 다중 정렬, 오름차순/내림차순)
+- 기본 정렬: 미팅 예정일 오름차순 (가장 빠른 순)
+- 오늘 미팅 예정인 행: amber 배경 + "오늘" 뱃지로 강조 표시
+- 페이지당 목록 수 선택 (10개 / 20개 / 50개 / 100개)
+- 페이지네이션
+- 행 클릭 시 해당 연락처의 미팅 로그 팝업 오픈
+
+#### 데이터 레이어
+- `getScheduledMeetings(today)` — meeting_date ≥ today, contacts 조인, meeting_date ASC
+
+#### 모바일 버전 (MobileScheduled)
+- 카드 형태 목록 (이름 / 회사 / 전화번호 / 메모 / 예정일)
+- 단일 정렬 드롭다운 + 방향 토글
+- 페이지 크기 선택 + 페이지네이션
+- 오늘 카드: amber 배경 강조
 
 ---
 
@@ -232,7 +259,7 @@ CLAUDE.md를 참고하여 STEP 5 작업을 시작합니다.
 - 모바일 전용 UI 별도 제작 (방향 B)
 - PC와 동일한 URL, 화면 크기에 따라 모바일 컴포넌트 렌더링
 - Tailwind 반응형 breakpoint 기준: md 이하는 모바일 UI 적용
-- 하단 탭 네비게이션 (대시보드 / 연락처 / 미팅 로그)
+- 하단 탭 네비게이션 (대시보드 / 연락처 / 미팅 로그 / 미팅예정)
 
 ### 모바일 제외 기능 (PC 전용)
 - 컬럼 관리, CSV 업로드, 일괄 삭제, 다중 정렬 패널

@@ -46,13 +46,15 @@ export function MobileLogs() {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
-    if (!q) return logs
-    return logs.filter(
-      (log) =>
-        log.contacts?.name?.toLowerCase().includes(q) ||
-        log.contents?.toLowerCase().includes(q)
-    )
-  }, [logs, search])
+    return logs
+      .filter((log) => log.meeting_date <= today)
+      .filter(
+        (log) =>
+          !q ||
+          log.contacts?.name?.toLowerCase().includes(q) ||
+          log.contents?.toLowerCase().includes(q)
+      )
+  }, [logs, search, today])
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
   const paginated = filtered.slice((page - 1) * pageSize, page * pageSize)

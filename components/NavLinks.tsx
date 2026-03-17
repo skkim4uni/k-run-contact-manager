@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { href: "/", label: "대시보드" },
   { href: "/contacts", label: "연락처" },
   { href: "/logs", label: "미팅 로그" },
+  { href: "/scheduled", label: "미팅예정" },
 ]
 
 export function NavLinks() {

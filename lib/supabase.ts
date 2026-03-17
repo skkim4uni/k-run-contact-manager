@@ -155,3 +155,18 @@ export async function getAllMeetingLogs(): Promise<MeetingLogWithContact[]> {
     throw error;
   }
 }
+
+export async function getScheduledMeetings(today: string): Promise<MeetingLogWithContact[]> {
+  try {
+    const { data, error } = await supabase
+      .from("meeting_logs")
+      .select("*, contacts(*)")
+      .gte("meeting_date", today)
+      .order("meeting_date", { ascending: true });
+    if (error) throw error;
+    return (data ?? []) as MeetingLogWithContact[];
+  } catch (error) {
+    console.error("getScheduledMeetings 오류:", error);
+    throw error;
+  }
+}
